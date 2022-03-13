@@ -77,6 +77,7 @@ def payment_gateway(req):
 
 #Payment retun
 def create_checkout(request):
+    #
     gateway = braintree.BraintreeGateway(
         braintree.Configuration(
         environment=braintree.Environment.Sandbox,
@@ -92,6 +93,7 @@ def create_checkout(request):
         "submit_for_settlement": True
         }
     })
+
     if result.is_success or result.transaction:
         print("in here")
         TRANSACTION_SUCCESS_STATUSES = [
@@ -108,10 +110,13 @@ def create_checkout(request):
         lastcheck = val.status in TRANSACTION_SUCCESS_STATUSES
         item = "";
         cnx = try_to_connect()
+
         sql = "SELECT `url` FROM `items` WHERE `itemname` LIKE %s AND `path` LIKE %s"
+
         temp = (request.POST['Item'],request.POST['amount'])
+        #A =asdasfaa
         cursor = cnx.cursor()
-        cursor.execute(sql)
+        cursor.execute(sql,temp)
         counter=0
         myvalue=""
         for row in cursor:
@@ -873,7 +878,7 @@ def get_key2(path,ledgure_name,keyname,password):
   # { "output": "1d02bd8d2550f41376ef49188516c870119dca49e9d8a5ff9649f6211eb2bfb7" }
   myval = json.loads( x.content.decode('utf-8').strip() )
   if len(myval["output"])<=10:
-    a =sadfasdfasdfa
+    a
     return [False,"NO_key", "",path+" "+ledgure_name+" "+keyname+" "+password+" "+path+"check_key.php?name="+keyname]
   dictionary ={ 
       "key": str(newkey),
