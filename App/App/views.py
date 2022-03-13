@@ -213,11 +213,11 @@ def add_post(uname,password,tital,text,body,photo,catagoy,catagoy_2,iframe,cnx,r
   return json.dumps(dictionary, indent = 4)
 
 #Checks to see if a post is private
-def check_priavate(key,private,cnx):
+def check_priavate(key,private,postkey,cnx):
   if private=="":
     return "True"
   sql="SELECT * FROM `posts` WHERE `uname` LIKE 'addmin' AND `catagoy_2` LIKE %s AND `postkey` LIKE %s;"
-  tuple1 = (private,key)
+  tuple1 = (key,postkey)
   cursor = cnx.cursor()
   cursor.execute(sql,tuple1)
   counter=0
@@ -255,7 +255,7 @@ def getpost(key,usekkey,cnx,return_var_type):
 
     } 
     return json.dumps(dictionary, indent = 4)
-  if (check_priavate(usekkey,private,cnx)=="True"):
+  if (check_priavate(usekkey,private,key,cnx)=="True"):
     dictionary ={ 
       "id": key,
       "username":   str(out[0])  ,
@@ -346,7 +346,7 @@ def add_key(ledgure,password,email,message,key_message,keyfroward,cnx,return_var
     "email":email,
     "message":key_message,
     "ledgure_ownder_email":email_to,
-    "land_url":path+"action_type=makepage&usertemplate_name=u1_mygameSEHTRJFCNLVXNRNSFVJXITPCKPKBPH&var1="+post_id+"?"+solution,
+    "land_url":path+"action_type=rm_key&name="+post_id+"&key="+solution,
     "ledgure": ledgure,
     "path":path
   }
@@ -504,8 +504,8 @@ def rm_key(name,key,message,cnx,return_var_type):
   cnx.commit()
   myrandom = get_random_string(128)
   post_id = hashlib.sha256(myrandom.encode()).hexdigest()
-  sql="INSERT INTO `posts` (`uname`, `text`, `body`, `tital`, `time`, `photo`, `iframe`, `catagoy`, `catagoy_2`, `postkey`) VALUES ('addmin', '', '', '', CURRENT_TIMESTAMP, '', '', '', %s, %s);";
-  tuple1 = (Lname,post_id)
+  sql="INSERT INTO `posts` (`uname`, `text`, `body`, `tital`, `time`, `photo`, `iframe`, `catagoy`, `catagoy_2`, `postkey`) VALUES ('addmin', '', %s, %s, CURRENT_TIMESTAMP, '', '', '', %s, %s);";
+  tuple1 = (key_message,message,Lname,post_id)
   cursor = cnx.cursor()
   cursor.execute(sql,tuple1)
   cnx.commit()
@@ -834,22 +834,29 @@ def compleat_traid_comand(user,password,traid_id,cnx):
 #add barter curancy to acount
 def get_key2(path,ledgure_name,keyname,password):
   #get barter key
-  myurl = path+"?action_type=check_key&name="+keyname
+  myurl = path+"action_type=check_key&name="+keyname
   x = requests.get(myurl)
+  out= x.content
   getarray = json.loads(x.content.decode('utf-8'))
+  print(getarray)
+  #quit()
+
   if getarray["hash"]!="NA":
     print("passed_leddgure")
   else:
+
     return [False,"Failed leddgure",path+" "+ledgure_name+" "+keyname+" "+password+" "+path+"check_key.php?name="+keyname]
   if getarray["ledgure"]==ledgure_name:
     print("passed_leddgure")
   else:
+
     return [False,"Failed leddgure",path+" "+ledgure_name+" "+keyname+" "+password+" "+path+"check_key.php?name="+keyname]
   passwordCandidate = password
   val = hashlib.sha256(passwordCandidate.encode()).hexdigest()
   if val==getarray["hash"]:
     print("passed_key")
   else:
+
     return [False,"Failed_key",path+" "+ledgure_name+" "+keyname+" "+password+" "+path+"check_key.php?name="+keyname]
   random_string=""
 
@@ -865,8 +872,8 @@ def get_key2(path,ledgure_name,keyname,password):
   x = requests.get(path+"?name="+keyname+"&key="+password+"&newkey="+keyhash+"&action_type=change_key")
   # { "output": "1d02bd8d2550f41376ef49188516c870119dca49e9d8a5ff9649f6211eb2bfb7" }
   myval = json.loads( x.content.decode('utf-8').strip() )
-
-  if len(myval["output"])<=40:
+  if len(myval["output"])<=10:
+    a =sadfasdfasdfa
     return [False,"NO_key", "",path+" "+ledgure_name+" "+keyname+" "+password+" "+path+"check_key.php?name="+keyname]
   dictionary ={ 
       "key": str(newkey),
@@ -879,6 +886,7 @@ def get_key2(path,ledgure_name,keyname,password):
 
 #add crypto to user acount
 def add_crypto(uname,password,path,key,name,lname,cnx):
+  path=usriper(path)
   if (usercheck_conect(uname,password,cnx)==False):
     return "No_user"
   is_user=usercheck_conect(uname,password,cnx)
@@ -888,10 +896,7 @@ def add_crypto(uname,password,path,key,name,lname,cnx):
     }
     return json.dumps(dictionary, indent = 4) 
   val = [False,path+"check_key.php?name="+key,path+"check_key.php?name="+key,""]
-  try:
-    val = get_key2(path,lname,name,key)
-  except:
-    pass
+  val = get_key2(path,lname,name,key)
   #val = get_key(path,lname,name,key)
   if (val[0]==True):
     random_string=""
@@ -1064,6 +1069,7 @@ def user_acount(user,cnx):
 
 #setup up api returens and  calls other functions
 def sriper(word):
+  return word
   word=word.replace("\"" ,"(???1???)")
   word=word.replace("'"  ,"(???2???)")
   word=word.replace("`"  ,"(???3???)")
@@ -1074,6 +1080,7 @@ def sriper(word):
   return word
 
 def usriper(word):
+  return word
   word=word.replace("\"" ,"(???1???)")
   word=word.replace("'"  ,"(???2???)")
   word=word.replace("`"  ,"(???3???)")
@@ -1134,7 +1141,7 @@ def doit(req):
         pass
     L_name=""
     try:
-        L_name=sriper(req.GET["L_name"])
+        L_name=req.GET["L_name"]
     except:
         pass
     request_type=""
